@@ -1,0 +1,215 @@
+// Intent demo app
+// activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/myLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#009900"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="191dp"
+        android:layout_marginTop="190dp"
+        android:background="#03A9F4"
+        android:onClick="onClick"
+        android:text="@string/myButton"
+        android:textColor="#FFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="@string/myMenu"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/plainText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="167dp"
+        android:width="300dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="@string/plainText"
+        android:textColor="#FFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</android.support.constraint.ConstraintLayout>
+
+// activity_child.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/myLayout2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#006969"
+    tools:context=".ChildActivity">
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:text="@string/myButton2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="83dp"
+        android:text="@string/myText2"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</android.support.constraint.ConstraintLayout>
+
+// strings.xml
+
+<resources>
+    <string name="app_name">intent</string>
+    <string name="myButton">Next menu</string>
+    <string name="myMenu">Main Menu</string>
+    <string name="myText2">Child menu</string>
+    <string name="myButton2">Previous menu</string>
+    <string name="plainText">Enter message</string>
+</resources>
+
+// AndroidManifest.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.povilas.intent">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ChildActivity"></activity>
+        <service android:name=".intentService"></service>
+    </application>
+
+</manifest>
+
+// MainActivity.java
+
+// package com.example.povilas.intent;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.content.Intent;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Intent intent = new Intent(this, intentService.class);
+        startService(intent);
+    }
+
+    public void onClick(View view){
+        Intent i = new Intent(this, ChildActivity.class);
+        final EditText mainInput = (EditText) findViewById(R.id.plainText);
+        String userMessage = mainInput.getText().toString();
+        i.putExtra("mainMessage", userMessage);
+
+        startActivity(i);
+    }
+}
+
+// intentService.java
+
+package com.example.povilas.intent;
+
+import android.app.IntentService;
+import android.content.Intent;
+import android.support.annotation.Nullable;
+import android.util.Log;
+
+
+public class intentService extends IntentService{
+
+    private static final String TAG = "com.example.povilas.intent";
+
+    public intentService(){
+        super("intentService");
+    }
+
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+        Log.i(TAG, "The service has now started!");
+    }
+}
+
+
+// ChildActivity.java
+
+package com.example.povilas.intent;
+
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+public class ChildActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_child);
+        Bundle mainData = getIntent().getExtras();
+        if(mainData == null){
+            return;
+        }
+        String mainMessage = mainData.getString("mainMessage");
+        final TextView textView2 = (TextView) findViewById(R.id.textView2);
+        textView2.setText(mainMessage);
+    }
+
+    public void onClick(View view){
+        Intent i = new Intent(this, MainActivity.class);
+        startActivity(i);
+    }
+}
+
