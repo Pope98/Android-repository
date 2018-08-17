@@ -1,0 +1,250 @@
+// activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    tools:layout_editor_absoluteY="81dp">
+
+    <EditText
+        android:id="@+id/myInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="58dp"
+        android:width="300dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:textColor="#006969"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/addButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="42dp"
+        android:background="@android:color/holo_green_light"
+        android:onClick="addButtonClicked"
+        android:text="@string/add"
+        app:layout_constraintBottom_toBottomOf="@+id/deleteButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/deleteButton" />
+
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="45dp"
+        android:layout_marginTop="179dp"
+        android:background="@android:color/holo_red_light"
+        android:onClick="deleteButtonClicked"
+        android:text="@string/delete"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/myText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="13dp"
+        android:layout_marginTop="86dp"
+        android:text="@string/myText"
+        android:textColor="#006969"
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/addButton"
+        app:layout_constraintTop_toBottomOf="@+id/deleteButton" />
+</android.support.constraint.ConstraintLayout>
+
+// strings.xml
+
+<resources>
+    <string name="app_name">Checklist</string>
+    <string name="add">Add</string>
+    <string name="delete">Delete</string>
+    <string name="myText">Some text</string>
+</resources>
+
+// android_manifest.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.povilas.myapplication">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+
+// MainActivity.java
+
+package com.example.povilas.myapplication;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.view.View;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText myInput;
+    TextView myText;
+    MyDBHandler dbHandler;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        myInput = (EditText) findViewById(R.id.myInput);
+        myText = (TextView) findViewById(R.id.myText);
+        dbHandler = new MyDBHandler(this,null,null,1);
+        printDatabase();
+    }
+
+    public void addButtonClicked(View view){
+        Products product = new Products(myInput.getText().toString());
+        dbHandler.addProduct(product);
+        printDatabase();
+    }
+
+    public void deleteButtonClicked(View view){
+        String inputText = myInput.getText().toString();
+        dbHandler.deleteProduct(inputText);
+        printDatabase();
+    }
+
+    public void printDatabase(){
+        String dbString = dbHandler.databaseToString();
+        myText.setText(dbString);
+        myInput.setText("");
+    }
+
+
+}
+ // Products.java
+ package com.example.povilas.myapplication;
+
+public class Products {
+
+    private int _id;
+    private String _productname;
+
+    public Products(){
+        // empty c-tor
+    }
+
+    public Products(String productname) {
+        this._productname = productname;
+    }
+
+    public void set_id(int id) {
+        this._id = id;
+    }
+
+    public void set_productname(String productname) {
+        this._productname = productname;
+    }
+
+    public int get_id() {
+        return _id;
+    }
+
+    public String get_productname() {
+        return _productname;
+    }
+
+
+
+}
+
+// MyDBHandler.java
+
+package com.example.povilas.myapplication;
+
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.database.Cursor;
+import android.content.Context;
+import android.content.ContentValues;
+
+public class MyDBHandler extends SQLiteOpenHelper{
+
+    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "products.db";
+    public static final String TABLE_PRODUCTS = "products";
+    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_PRODUCTNAME = "productname";
+
+    public MyDBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+        super(context, DATABASE_NAME, factory, DATABASE_VERSION);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        String query = "CREATE TABLE " + TABLE_PRODUCTS + "(" +
+                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_PRODUCTNAME + " TEXT " +
+                ");";
+        db.execSQL(query);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCTS);
+        onCreate(db);
+    }
+
+    public void addProduct(Products product){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PRODUCTNAME, product.get_productname());
+        SQLiteDatabase db = getWritableDatabase();
+        db.insert(TABLE_PRODUCTS, null, values);
+        db.close();
+    }
+
+    public void deleteProduct(String productName){
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DELETE FROM " + TABLE_PRODUCTS + " WHERE " + COLUMN_PRODUCTNAME + "=\"" + productName + "\";");
+    }
+
+    public String databaseToString(){
+        String dbString = "";
+        SQLiteDatabase db = getWritableDatabase();
+        String query = "SELECT * FROM " + TABLE_PRODUCTS + " WHERE 1";
+
+        //Cursor points to a location in your results
+        Cursor recordSet = db.rawQuery(query, null);
+        //Move to the first row in your results
+        recordSet.moveToFirst();
+
+        //Position after the last row means the end of the results
+        while (!recordSet.isAfterLast()) {
+            // null could happen if we used our empty constructor
+            if (recordSet.getString(recordSet.getColumnIndex("productname")) != null) {
+                dbString += recordSet.getString(recordSet.getColumnIndex("productname"));
+                dbString += "\n";
+            }
+            recordSet.moveToNext();
+        }
+        db.close();
+        return dbString;
+    }
+}
