@@ -1,44 +1,51 @@
-package com.example.povilas.myapplication;
+package com.example.povilas.boundservice;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+import android.os.IBinder;
+import android.content.Intent;
+import android.content.Context;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
+import com.example.povilas.boundservice.MyService.MyLocalBinder;
+
+import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText myInput;
-    TextView myText;
-    MyDBHandler dbHandler;
+    MyService myObject;
+    boolean isBound = false;
+
+    public void onButtonClicked(View view){
+        String currentTime = myObject.getCurrentTime();
+        TextView myText = (TextView) findViewById(R.id.myText);
+        myText.setText(currentTime);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        myInput = (EditText) findViewById(R.id.myInput);
-        myText = (TextView) findViewById(R.id.myText);
-        dbHandler = new MyDBHandler(this,null,null,1);
-        printDatabase();
+        Intent i = new Intent(this, MyService.class);
+        bindService(i, myConnection, Context.BIND_AUTO_CREATE);
     }
 
-    public void addButtonClicked(View view){
-        Products product = new Products(myInput.getText().toString());
-        dbHandler.addProduct(product);
-        printDatabase();
-    }
+    private ServiceConnection myConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MyLocalBinder binder = (MyLocalBinder) service;
+            myObject = binder.getService();
+            isBound = true;
+        }
 
-    public void deleteButtonClicked(View view){
-        String inputText = myInput.getText().toString();
-        dbHandler.deleteProduct(inputText);
-        printDatabase();
-    }
-
-    public void printDatabase(){
-        String dbString = dbHandler.databaseToString();
-        myText.setText(dbString);
-        myInput.setText("");
-    }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isBound = false;
+        }
+    };
 
 
 }
